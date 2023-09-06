@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<style>
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+    .el-table .warning-row {
+        background: oldlace;
+    }
+
+    .el-table .success-row {
+        background: #f0f9eb;
+    }
+    .el-textarea__inner{
+        height: 150px;
+    }
+
+    .upload-demo{
+        display: inline-block !important;
+    }
+    .el-button--small, .el-button--small.is-round{
+        padding: 12px 20px;
+    }
+    .el-button--mini, .el-button--small{
+        font-size: 14px;
+    }
+
+</style>
+
+<div id="app">
+    <el-container style="height: 800px; border: 1px solid #eee">
+        <el-header style="text-align: right; font-size: 18px;height: 60px" :model="form1">
+            <el-dropdown>
+                <i class="el-icon-setting" style="margin-right: 15px ;font-size: 18px"></i>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>修改密码</el-dropdown-item>
+                    <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+            <span>{{admin.username}} ~欢迎您</span>
+        </el-header>
+
+        <el-container>
+            <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                <el-menu :default-openeds="['1', '3']">
+                    <el-submenu index="1">
+                        <template slot="title"><i class="el-icon-message"></i>导航</template>
+                        <el-menu-item-group>
+                            <template slot="title">功能管理</template>
+                            <el-menu-item index="1-1" @click="nav1">图书管理</el-menu-item>
+                            <el-menu-item index="1-2" @click="nav2">读者管理</el-menu-item>
+                            <el-menu-item index="1-3" @click="nav3">借阅管理</el-menu-item>
+                            <el-menu-item index="1-4" @click="nav4">还书管理</el-menu-item>
+                            <el-menu-item index="1-5" @click="nav5">反馈管理</el-menu-item>
+                            <el-menu-item index="1-6" @click="nav6">公告管理</el-menu-item>
+                        </el-menu-item-group>
+
+                    </el-submenu>
+
+                </el-menu>
+            </el-aside>
+            <el-main>
+<!--                表单 实现查询功能-->
+                <el-form :inline="true" :model="book" class="demo-form-inline">
+                    <el-form-item label="书名">
+                        <el-input v-model="book.bname" placeholder="霍乱时期的爱情"></el-input>
+                    </el-form-item>
+                    <el-form-item label="作者">
+                        <el-input v-model="book.author" placeholder="马尔克斯"></el-input>
+                    </el-form-item>
+                    <el-form-item label="分类">
+                        <el-input v-model="book.type" placeholder="小说"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="selectBook">查询</el-button>
+                    </el-form-item>
+                </el-form>
+<!--                两个常用操作-->
+                <el-row>
+                    <el-button type="primary" @click="dialogVisible = true">添加</el-button>
+<!--                    <el-button type="primary" @click="dialogOfUpload = true">导入模板下载</el-button>-->
+                    <el-button type="primary" @click="dialogOfUpload = true">批量导入</el-button>
+                    <a class="downloadUrl" style="margin-right: 20px" href="http://localhost:8080/books_manager_system_war/import/download" ref="downloadUrl">导入模板下载</a>
+                </el-row>
+<!--                    通过点击添加按钮弹出对话框并填写表单数据并传到后台-->
+                <el-dialog
+                        title="添加"
+                        :visible.sync="dialogVisible"
+                        width="30%">
+                    <span>
+                        <el-form ref="book" :model="book" label-width="80px">
+                             <el-form-item label="书名">
+                                <el-input v-model="book.bname"></el-input>
+                             </el-form-item>
+                            <el-form-item label="作者">
+                                <el-input v-model="book.author"></el-input>
+                             </el-form-item>
+                            <el-form-item label="出版社">
+                                <el-input v-model="book.press"></el-input>
+                             </el-form-item>
+                            <el-form-item label="类别">
+                                <el-input v-model="book.type"></el-input>
+                            </el-form-item>
+                            <el-form-item label="简介">
+                                <el-input type="textarea"  v-model="book.introduction"></el-input>
+                            </el-form-item>
+                            <el-button type="primary" @click="addBook">确定</el-button>
+                            <el-button @click="dialogVisible = false">取消</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </span>
+                </el-dialog>
+
+<!--                批量上传-->
+                <!--limit:最大上传数，on-exceed：超过最大上传数量时的操作  -->
+<!--                <el-upload-->
+<!--                        class="upload-demo"-->
+<!--                        action=""-->
+<!--                        :on-change="handleChange"-->
+<!--                        :on-remove="handleRemove"-->
+<!--                        :on-exceed="handleExceed"-->
+<!--                        :limit="limitUpload"-->
+<!--                        accept="application/vnd.openxmlformats- -->
+<!--        officedocument.spreadsheetml.sheet,application/vnd.ms-excel"-->
+<!--                        :auto-upload="true">-->
+<!--                    <el-button size="small" type="primary">批量添加</el-button>-->
+<!--                </el-upload>-->
+
+                <el-dialog title="上传" :visible.sync="dialogOfUpload" width="35%" style="text-align: center;">
+                    <el-upload class="upload-demo" action="" drag multiple :headers="headers" :auto-upload="false"
+                               :file-list="fileList"
+                               :on-change="handleChange"
+                               :on-remove="handleRemove"
+                               :on-exceed="handleExceed"
+                               accept="application/vnd.openxmlformats
+                               officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+                        <i class="el-icon-upload"></i>
+                        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                        <div class="el-upload__tip" slot="tip">上传Excel格式文件</div>
+                    </el-upload>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="dialogOfUpload = false">取 消</el-button>
+                        <el-button type="primary" @click="confirmUpload()">上 传</el-button>
+                    </div>
+                </el-dialog>
+
+
+
+<!--                表格数据，通过发送ajax请求到后端并接受json数据，tableDate是我们要绑定的数据模型-->
+
+                    <el-table :data="tableData" style="width: 100%" :row-class-name="tableRowClassName">
+                        <el-table-column type="index" label="序号" align="center"></el-table-column>
+                        <el-table-column prop="bname" label="书名" align="center"></el-table-column>
+                        <el-table-column prop="author" label="作者" align="center"></el-table-column>
+                        <el-table-column prop="press" label="出版社" align="center"></el-table-column>
+                        <el-table-column prop="type" label="分类" align="center"></el-table-column>
+                        <el-table-column prop="status" label="状态" align="center"></el-table-column>
+                        <el-table-column label="操作" align="center">
+                            <template slot-scope="scope">
+                            <el-row>
+                                <el-button type="primary" @click="modifyBook(scope.row);dialogVisible2 = true">修改</el-button>
+                                <el-button type="danger" @click="deleteById(scope.row)">删除</el-button>
+                            </el-row>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+
+                <el-dialog
+                        title="修改"
+                        :visible.sync="dialogVisible2"
+                        width="30%">
+                    <span>
+                        <el-form ref="book2" :model="book2" label-width="80px">
+                             <el-form-item label="书名">
+                                <el-input v-model="book2.bname"></el-input>
+                             </el-form-item>
+                            <el-form-item label="作者">
+                                <el-input v-model="book2.author"></el-input>
+                             </el-form-item>
+                            <el-form-item label="出版社">
+                                <el-input v-model="book2.press"></el-input>
+                             </el-form-item>
+                            <el-form-item label="类别">
+                                <el-input v-model="book2.type"></el-input>
+                             </el-form-item>
+                            <el-form-item label="简介">
+                                <el-input type="textarea" v-model="book2.introduction"></el-input>
+                             </el-form-item>
+
+                            <el-button type="primary" @click="modifyBookAction">确定</el-button>
+                            <el-button @click="dialogVisible2 = false">取消</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </span>
+                </el-dialog>
+            </el-main>
+        </el-container>
+    </el-container>
+
+
+</div>
+
+
+
+
+<script>
+    new Vue({
+        el:"#app",
+        mounted(){
+            this.selectAll()
+            axios({
+                method:"get",
+                url:"http://localhost:8080/books_manager_system_war/book/message"
+            }).then(resp=>{
+                this.admin = resp.data;
+            })
+        },
+
+        methods: {
+
+            confirmUpload() { //确认上传
+                let param = new FormData();  //创建form对象
+
+                param.append("file", this.fileTemp); //通过append向form对象添加数
+
+                console.log(param.get('file')); //FormData私有类对象，访问不到，可以通过get判断值是否传进去
+                let config = {
+                    headers:{'Content-Type':'multipart/form-data'} //这里是重点，需要和后台沟通好请求头，Content-Type不一定是这个值
+                }; //添加请求头
+                axios.post('http://localhost:8080/books_manager_system_war/import/importBooks', param, config)
+                    .then(response=>{
+                        console.log(response.data);
+                        if (response.data == 'success') {
+                            this.dialogOfUpload = false
+                            this.handleRemove();
+                            this.selectAll();
+
+                            this.$message({
+                                message: "批量导入成功！",
+                                duration: 1000,
+                                type: 'success',
+                            });
+                        }
+                    })
+            },
+
+
+            //上传文件时处理方法
+            handleChange(file, fileList){
+
+                console.log(file)
+
+                if(file.raw){
+                    if((file.raw.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                        || (file.raw.type == 'application/vnd.ms-excel')){
+
+                        // 赋值文件
+                        this.fileTemp = file.raw;
+
+                        this.$message({
+                            message: '文件选择成功！',
+                            type: 'success',
+                            duration: 500
+                        });
+                    } else {
+                        this.$message({
+                            type:'warning',
+                            message:'附件格式错误，请删除后重新上传！'
+                        })
+                    }
+                } else {
+                    this.$message({
+                        type:'warning',
+                        message:'请上传附件！'
+                    })
+                }
+            },
+            //超出最大上传文件数量时的处理方法
+            handleExceed(){
+                this.$message({
+                    type:'warning',
+                    message:'超出最大上传文件数量的限制！'
+                })
+                return;
+            },
+            //移除文件的操作方法
+            handleRemove(file,fileList){
+                this.fileTemp = null
+            },
+
+            checkDetail(val){
+                console.log(val);
+                console.log(val.type);
+                console.log(val.bname);
+                this.book2.type = val.type;
+                this.book2.author = val.author;
+                this.book2.press = val.press;
+                this.book2.type = val.type;
+                this.book2.bname = val.bname;
+                this.book2.introduction = val.introduction;
+                console.log(this.book2);
+            },
+
+
+            modifyBook(val){
+                console.log(val);
+                console.log(val.type);
+                console.log(val.bname);
+                this.book2.type = val.type;
+                this.book2.author = val.author;
+                this.book2.press = val.press;
+                this.book2.type = val.type;
+                this.book2.bname = val.bname;
+                this.book2.id = val.id;
+                this.book2.introduction = val.introduction;
+                console.log(this.book2);
+
+
+
+            },
+            modifyBookAction(){
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/book/updateBook",
+                    data :_this.book2}).then(resp=>{
+                    if(resp.data=="success"){
+                        this.$message({
+                            message: '恭喜你，修改成功！',
+                            type: 'success'
+                        });
+                        this.dialogVisible2 = false;
+                        this.selectAll();
+
+                    }
+                    else{
+                        this.$message.error('修改失败，请重试！');
+                    }
+
+                })
+            },
+
+            deleteById(val){
+                // console.log(this.currentRow)
+                this.selectById[0]=val.id;
+                console.log( this.selectById);
+                if(val.status=="在架") {
+                    var _this=this;
+                    axios({
+                        method:"post",
+                        url:"http://localhost:8080/books_manager_system_war/book/deleteById",
+                        data :_this.selectById
+                    }).then(resp=>{
+                        if(resp.data=="success"){
+                            this.$message({
+                                message: '恭喜你，删除成功！',
+                                type: 'success'
+                            });
+                            this.selectAll();
+
+                        }
+                        else{
+                            this.$message.error('删除失败，请重试！');
+                        }
+
+                    })
+                }else{
+                    this.$message.error('该图书已被借阅，删除失败！');
+                }
+
+            },
+            selectAll(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectAll"
+                }).then(resp=>{
+                    this.tableData = resp.data
+                })
+            },
+            addBook(){
+                // console.log(this.book);
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/book/addBook",
+                    data :_this.book}).then(resp=>{
+                        if(resp.data=="success"){
+                            this.$message({
+                                message: '恭喜你，添加成功！',
+                                type: 'success'
+                            });
+                            this.dialogVisible = false;
+                            this.selectAll();
+
+                        }
+                        else{
+                            this.$message.error('添加失败，请重试！');
+                        }
+
+                })
+            },
+            selectBook() {
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectByCondition",
+                    data :_this.book}).then(resp=>{
+                    this.tableData = resp.data;
+
+                })
+            },
+            tableRowClassName({row, rowIndex}) {
+                rowIndex++;
+                if (rowIndex%4 === 2) {
+                    return 'warning-row';
+                } else if (rowIndex%4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+
+            nav1(){
+                window.location.href="admin.html"
+            },
+            nav2(){
+                window.location.href="admin_Reader.html"
+            },
+            nav3(){
+                window.location.href="admin_Borrow.html"
+            },
+            nav4(){
+                window.location.href="admin_return.html"
+            },
+            nav5(){
+                window.location.href="admin_feedback.html"
+            },
+            nav6(){
+                window.location.href="admin_notice.html"
+            },
+            logout(){
+                window.location.href="login.html"
+            },
+
+
+        },
+        data() {
+            return {
+                dialogOfUpload: false,
+                fileList: [],
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+
+                limitUpload: 1,
+                fileTemp: null,
+                file: null,
+                da: [],
+                dalen: 0,
+                getExceldata: {
+                    allExceldata: [],
+                },
+
+
+                form1:{
+
+                },
+                admin:{
+                    username:'',
+                    password:''
+                },
+                selectById:[],
+                book2:{
+                    id:'',
+                    bname: '',
+                    author: '',
+                    press: '',
+                    type: '',
+                    status:'',
+                    introduction:''
+                },
+                book: {
+                    bname: '',
+                    author: '',
+                    press: '',
+                    type: '',
+                    status:'',
+                    introduction:''
+                },
+                val:null,
+                currentRow:null,
+
+                oldCurrentRow:null,
+
+                selectRows:null,
+
+                dialogVisible: false,
+                dialogVisible2: false,
+
+                tableData: [{
+                    bname: '东方快车谋杀案',
+                    author: '阿加莎克里斯蒂',
+                    press: '新星出版社',
+                    type: '小说',
+                    status:'0',
+                    introduction:'《东方快车谋杀案》（Murder on the Orient Express）是英国作家阿加莎·克里斯蒂创作的侦探小说，属于侦探赫尔克里·波洛系列，由英国柯林斯犯罪俱乐部于1934年1月1日首次出版。\n' +
+                        '该小说围绕发生在豪华列车“东方快车”上的一起谋杀案，讲述了大侦探波洛在杀机四伏的列车上拨开重重迷雾，最终在十二个嫌疑人中锁定真凶的故事。小说探讨了法治不健全的情况下的私刑寻仇，人情正义与法理争议之间的重重矛盾。'
+                }]
+            }
+        }
+
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<style>
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+    .el-table .warning-row {
+        background: oldlace;
+    }
+
+    .el-table .success-row {
+        background: #f0f9eb;
+    }
+
+
+</style>
+
+<div id="app">
+    <el-container style="height: 800px; border: 1px solid #eee">
+
+        <el-container>
+            <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                <el-menu :default-openeds="['1', '3']">
+                    <el-submenu index="1">
+                        <template slot="title"><i class="el-icon-message"></i>导航</template>
+                        <el-menu-item-group>
+                            <template slot="title">功能管理</template>
+                            <el-menu-item index="1-1" @click="nav1">图书查询</el-menu-item>
+                            <el-menu-item index="1-2" @click="nav2">借阅管理</el-menu-item>
+                        </el-menu-item-group>
+
+                    </el-submenu>
+
+                </el-menu>
+            </el-aside>
+            <el-main>
+
+                <el-tabs v-model="activeName" @tab-click="handleClick">
+                    <el-tab-pane label="用户管理" name="first">
+                        <el-tag type="success">借阅记录</el-tag>
+                        <el-table
+                                :data="myBorrowData"
+                                style="width: 100%"
+                                :row-class-name="tableRowClassName"
+                                title="借阅">
+                            <el-table-column
+                                    type="index"
+                                    label="序号"
+                                    align="center">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="sno"
+                                    label="学号"
+                                    align="center">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="bid"
+                                    label="图书号"
+                                    align="center">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="bname"
+                                    label="书名"
+                                    align="center">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="begintime"
+                                    label="开始时间"
+                                    align="center">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="endtime"
+                                    label="截至时间"
+                                    align="center">
+                            </el-table-column>
+                            <el-table-column
+                                    prop="status"
+                                    label="状态"
+                                    align="center">
+                            </el-table-column>
+                            <el-table-column
+                                    label="操作"
+                                    align="center">
+                                <template slot-scope="scope">
+                                    <el-row>
+                                        <el-button type="danger" @click="returnBook(scope.row)">还书</el-button>
+                                    </el-row>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+
+                    </el-tab-pane>
+                    <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
+                    <el-tab-pane label="角色管理" name="third">角色管理</el-tab-pane>
+                    <el-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</el-tab-pane>
+                </el-tabs>
+            </el-main>
+        </el-container>
+    </el-container>
+
+
+</div>
+
+
+
+
+<script>
+    new Vue({
+        el:"#app",
+        mounted(){
+            this.selectBySno()
+            axios({
+                method:"get",
+                url:"http://localhost:8080/books_manager_system_war/reader/message"
+            }).then(resp=>{
+                this.reader = resp.data
+            })
+        },
+
+        methods: {
+
+            handleClick(tab, event) {
+                console.log("hello");
+            },
+
+            returnBook(val){
+
+                this.selectById[0]=val.bid;
+                console.log( this.selectById[0]);
+                let status =val.status;
+                console.log(status);
+                if(status=="已借书") {
+                    var _this = this;
+                    axios({
+                        method: "post",
+                        url: "http://localhost:8080/books_manager_system_war/book/returnBook",
+                        data: _this.selectById
+                    }).then(resp => {
+                        if (resp.data == "success") {
+                            this.$message({
+                                message: '恭喜你，还书完成！',
+                                type: 'success'
+                            });
+                            this.selectBySno()
+
+                        } else {
+                            this.$message.error('还书失败，请重试！');
+                        }
+
+                    })
+                }else{
+                    this.$message.error('该书已还！');
+                }
+            },
+            selectBySno(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectBySno"
+                }).then(resp=>{
+                    this.myBorrowData = resp.data
+                })
+            },
+            // addBook(){
+            //     // console.log(this.book);
+            //     var _this=this;
+            //     axios({
+            //         method:"post",
+            //         url:"http://localhost:8080/books_manager_system_war/book/addBook",
+            //         data :_this.book}).then(resp=>{
+            //         if(resp.data=="success"){
+            //             this.$message({
+            //                 message: '恭喜你，添加成功！',
+            //                 type: 'success'
+            //             });
+            //             this.dialogVisible = false;
+            //             this.selectAll();
+            //
+            //         }
+            //         else{
+            //             this.$message.error('添加失败，请重试！');
+            //         }
+            //
+            //     })
+            // },
+            // selectBook() {
+            //     var _this=this;
+            //     axios({
+            //         method:"post",
+            //         url:"http://localhost:8080/books_manager_system_war/book/selectByCondition",
+            //         data :_this.book}).then(resp=>{
+            //         this.tableData = resp.data;
+            //
+            //     })
+            // },
+            tableRowClassName({row, rowIndex}) {
+                rowIndex++;
+                if (rowIndex%4 === 2) {
+                    return 'warning-row';
+                } else if (rowIndex%4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+            handleCurrentChange(val) {
+                this.currentRow = val;
+            },
+            nav1(){
+                window.location.href="reader.html"
+            },
+            nav2(){
+                window.location.href="reader_Borrow.html"
+            },
+
+
+
+        },
+        data() {
+            return {
+
+                activeName: 'second',
+
+                val:null,
+                form1:{
+
+                },
+                reader:{
+                    sno:'',
+                    password:'',
+                    name:'',
+                    phone:'',
+                    status:''
+                },
+                selectById:[],
+                // book: {
+                //     bname: '',
+                //     author: '',
+                //     press: '',
+                //     type: '',
+                //     status:''
+                //
+                // },
+                dialogVisible: false,
+
+                myBorrowData: [{
+                    sno: '2002010520',
+                    bid: '1000',
+                    bname: '阿加莎克里斯蒂',
+                    begintime: '2002-12-10',
+                    endtime:'2002-12-10',
+                    status:'在架',
+
+                }]
+            }
+        }
+
+    })
+</script>
+</body>
+</html>

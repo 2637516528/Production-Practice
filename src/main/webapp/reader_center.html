@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<style>
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+    .el-table .warning-row {
+        background: oldlace;
+    }
+
+    .el-table .success-row {
+        background: #f0f9eb;
+    }
+
+    .el-form {
+        width: 500px;
+        height: 50%;
+        margin-top: 30px;
+        padding: 50px;
+        /*text-align: center;*/
+        background-color: aliceblue;
+    }
+    .el-form .el-form-item__label {
+         text-align: center;
+    }
+    .el-form-item__content .el-input{
+        width: 400px;
+    }
+    .el-form .el-button--primary {
+        margin-left: 200px;
+    }
+
+
+    .el-dialog__wrapper .el-form{
+        width: auto;
+    }
+    .el-dialog, .el-pager li {
+        min-width: 500px;
+    }
+    .el-dialog .el-form .el-button--primary {
+        margin-left: 100px;
+    }
+
+    .avatar-uploader .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    .avatar-uploader .el-upload:hover {
+        border-color: #409EFF;
+    }
+    .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 178px;
+        height: 178px;
+        line-height: 178px;
+        text-align: center;
+    }
+    .avatar {
+        width: 178px;
+        height: 178px;
+        display: block;
+    }
+</style>
+
+<div id="app">
+    <el-container style="height: 800px; border: 1px solid #eee">
+        <el-header style="text-align: right; font-size: 18px;height: 60px" :model="form1">
+            <el-dropdown>
+                <i class="el-icon-setting" style="margin-right: 15px ;font-size: 18px"></i>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item @click.native="personalCenter">个人中心</el-dropdown-item>
+                    <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+            <span>{{reader.name}} ~欢迎您</span>
+        </el-header>
+
+        <el-container>
+            <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                <el-menu :default-openeds="['1', '3']">
+                    <el-submenu index="1">
+                        <template slot="title"><i class="el-icon-message"></i>导航</template>
+                        <el-menu-item-group>
+                            <template slot="title">功能管理</template>
+                            <el-menu-item index="1-1" @click="nav1">图书查询</el-menu-item>
+                            <el-menu-item index="1-2" @click="nav2">借阅管理</el-menu-item>
+                            <el-menu-item index="1-3" @click="nav3">读者反馈</el-menu-item>
+                            <el-menu-item index="1-4" @click="nav4">公告查询</el-menu-item>
+                        </el-menu-item-group>
+
+                    </el-submenu>
+
+                </el-menu>
+            </el-aside>
+            <el-main>
+<!--                表单 实现查询功能-->
+<!--                <el-form :inline="true" :model="reader" class="demo-form-inline">-->
+<!--                    <el-form-item label="学号">-->
+<!--                        <el-input v-model="reader.sno" placeholder="2002010501"></el-input>-->
+<!--                    </el-form-item>-->
+<!--                    <el-form-item label="姓名">-->
+<!--                        <el-input v-model="reader.name" placeholder="库里"></el-input>-->
+<!--                    </el-form-item>-->
+<!--                    <el-form-item>-->
+<!--                        <el-button type="primary" @click="selectReader">查询</el-button>-->
+<!--                    </el-form-item>-->
+<!--                </el-form>-->
+<!--&lt;!&ndash;                两个常用操作&ndash;&gt;-->
+<!--                <el-row>-->
+<!--                    <el-button type="primary" @click="dialogVisible = true">添加</el-button>-->
+<!--                </el-row>-->
+<!--&lt;!&ndash;                    通过点击添加按钮弹出对话框并填写表单数据并传到后台&ndash;&gt;-->
+<!--                <el-dialog-->
+<!--                        title="添加"-->
+<!--                        :visible.sync="dialogVisible"-->
+<!--                        width="30%">-->
+<!--                    <span>-->
+<!--                        <el-form ref="reader" :model="reader" label-width="80px">-->
+<!--                             <el-form-item label="学号">-->
+<!--                                <el-input v-model="reader.sno"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            <el-form-item label="密码">-->
+<!--                                <el-input v-model="reader.password"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            <el-form-item label="姓名">-->
+<!--                                <el-input v-model="reader.name"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            <el-form-item label="联系电话">-->
+<!--                                <el-input v-model="reader.phone"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            <el-form-item label="状态">-->
+<!--                                <el-input v-model="reader.status"></el-input>-->
+<!--                             </el-form-item>-->
+
+
+
+<!--    <el-button type="primary" @click="addReader">确定</el-button>-->
+<!--    <el-button @click="dialogVisible = false">取消</el-button>-->
+<!--  </el-form-item>-->
+<!--</el-form></span>-->
+
+<!--                </el-dialog>-->
+
+<!--                表格数据，通过发送ajax请求到后端并接受json数据，tableDate是我们要绑定的数据模型-->
+<!--                <el-table-->
+<!--                        :data="reader"-->
+<!--                        style="width: 100%"-->
+<!--                        :row-class-name="tableRowClassName">-->
+<!--                    <el-table-column-->
+<!--                            prop="sno"-->
+<!--                            label="学号"-->
+<!--                            align="center">-->
+<!--                    </el-table-column>-->
+<!--                    <el-table-column-->
+<!--                            prop="password"-->
+<!--                            label="密码"-->
+<!--                            align="center">-->
+<!--                    </el-table-column>-->
+<!--                    <el-table-column-->
+<!--                            prop="name"-->
+<!--                            label="名字"-->
+<!--                            align="center">-->
+<!--                    </el-table-column>-->
+<!--                    <el-table-column-->
+<!--                            prop="phone"-->
+<!--                            label="联系电话"-->
+<!--                            align="center">-->
+<!--                    </el-table-column>-->
+<!--                    <el-table-column-->
+<!--                            label="操作"-->
+<!--                            align="center">-->
+<!--                        <template slot-scope="scope">-->
+<!--                            <el-row>-->
+<!--                                <el-button type="primary" @click="modifyReader(scope.row);dialogVisible2 = true">修改</el-button>-->
+
+<!--                            </el-row>-->
+<!--                        </template>-->
+<!--                    </el-table-column>-->
+<!--                </el-table>-->
+                <el-tag type="success">我的个人信息</el-tag>
+                <el-form ref="reader" :model="reader" label-width="80px">
+                    <el-form-item label="账号">
+                        <el-input v-model="reader.sno"></el-input>
+                    </el-form-item>
+                    <el-form-item label="密码">
+                        <el-input v-model="reader.password"></el-input>
+                    </el-form-item>
+                    <el-form-item label="姓名">
+                        <el-input v-model="reader.name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="联系电话">
+                        <el-input v-model="reader.phone"></el-input>
+                    </el-form-item>
+
+                    <el-button type="primary" @click="modifyReader(reader);dialogVisible2 = true">修改</el-button>
+<!--                    <el-button @click="dialogVisible2 = false">取消</el-button>-->
+                    </el-form-item>
+                </el-form></span>
+
+                <el-dialog
+                        title="修改"
+                        :visible.sync="dialogVisible2"
+                        width="30%">
+                    <span>
+                        <el-form ref="reader2" :model="reader2" label-width="80px">
+                            <el-form-item label="学号">
+                                <el-input v-model="reader2.sno"></el-input>
+                             </el-form-item>
+                            <el-form-item label="密码">
+                                <el-input v-model="reader2.password"></el-input>
+                             </el-form-item>
+                            <el-form-item label="姓名">
+                                <el-input v-model="reader2.name"></el-input>
+                             </el-form-item>
+                            <el-form-item label="联系电话">
+                                <el-input v-model="reader2.phone"></el-input>
+                             </el-form-item>
+
+
+
+                            <el-button type="primary" @click="modifyReaderAction">确定</el-button>
+                            <el-button @click="dialogVisible2 = false">取消</el-button>
+                                                    </el-form-item>
+                        </el-form></span>
+
+                    </el-dialog>
+            </el-main>
+        </el-container>
+    </el-container>
+
+
+</div>
+
+
+
+
+<script>
+    let readerData2
+    let my_readerId
+
+    new Vue({
+        el:"#app",
+
+        mounted(){
+            this.selectAll()
+            axios({
+                method:"get",
+                url:"http://localhost:8080/books_manager_system_war/reader/message"
+            }).then(resp=>{
+                this.reader = resp.data
+                console.log(this.reader.id) //1
+                my_readerId=this.reader.id
+            })
+
+
+        },
+
+        methods: {
+            selectAll(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/reader/selectAll"
+                }).then(resp=>{
+                    this.readerData = resp.data
+                    readerData2 = this.readerData
+
+                })
+
+            },
+
+            modifyReader(val){
+                console.log(val);
+                console.log(val.type);
+                console.log(val.sno);
+                this.reader2.id = val.id;
+                this.reader2.sno = val.sno;
+                this.reader2.password = val.password;
+                this.reader2.name = val.name;
+                this.reader2.phone = val.phone;
+                this.reader2.status = val.status;
+                console.log(this.reader2);
+
+
+
+            },
+            modifyReaderAction(){
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/reader/updateReader",
+                    data :_this.reader2}).then(resp=>{
+                    if(resp.data=="success"){
+                        this.$message({
+                            message: '恭喜你，修改成功！',
+                            type: 'success'
+                        });
+                        this.dialogVisible2 = false;
+                        this.reader = this.reader2
+
+                    }
+                    else{
+                        this.$message.error('修改失败，请重试！');
+                    }
+
+                })
+            },
+
+
+            selectReader(id){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/reader/selectReader"
+                }).then(resp=>{
+                    this.readerData2 = resp.data
+                    console.log(this.readerData2)
+                })
+
+            },
+
+
+
+            tableRowClassName({row, rowIndex}) {
+                rowIndex++;
+                if (rowIndex%4 === 2) {
+                    return 'warning-row';
+                } else if (rowIndex%4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+            handleCurrentChange(val) {
+                this.currentRow = val;
+            },
+            nav1(){
+                window.location.href="reader.html"
+            },
+            nav2(){
+                window.location.href="reader_Borrow.html"
+            },
+            nav3(){
+                window.location.href="reader_feedback.html"
+            },
+            nav4(){
+                window.location.href="reader_notice.html"
+            },
+            personalCenter(){
+                window.location.href="reader_center.html"
+            },
+            logout(){
+                window.location.href="login.html"
+            },
+
+        },
+        data() {
+
+            return {
+                form1:{
+
+                },
+
+
+                val:null,
+                admin:{
+                    username:'',
+                    password:''
+                },
+                selectById:[],
+                reader:{
+                    sno: '',
+                    password: '',
+                    name: '',
+                    phone: '',
+                    status: '',
+                },
+                reader2:{
+                    id:'',
+                    sno: '',
+                    password: '',
+                    name: '',
+                    phone: '',
+                    status: '',
+                },
+                book: {
+                    bname: '',
+                    author: '',
+                    press: '',
+                    type: '',
+
+                },
+                dialogVisible: false,
+                dialogVisible2: false,
+
+                readerData: [{
+                    sno: '201908324508',
+                    password: '123456789',
+                    name: '曾',
+                    phone: '10086',
+                    status: '1',
+                }],
+                readerData2: [{
+                    sno: '201908324508',
+                    password: '123456789',
+                    name: 'ZZZ',
+                    phone: '10086',
+                    status: '1',
+                }],
+
+                my_readerData: [{
+                    sno: '201908324500',
+                    password: '123456789',
+                    name: 'T',
+                    phone: '10086',
+                    status: '1',
+                }],
+
+
+            }
+        }
+
+    })
+</script>
+</body>
+</html>

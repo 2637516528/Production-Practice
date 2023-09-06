@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<style>
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+    .el-table .warning-row {
+        background: oldlace;
+    }
+
+    .el-table .success-row {
+        background: #f0f9eb;
+    }
+    .el-textarea__inner{
+        height: 100px;
+    }
+    .el-tag{
+        margin-top: 20px;
+    }
+
+</style>
+
+<div id="app">
+    <el-container style="height: 800px; border: 1px solid #eee">
+        <el-header style="text-align: right; font-size: 18px;height: 60px" :model="form1">
+            <el-dropdown>
+                <i class="el-icon-setting" style="margin-right: 15px ;font-size: 18px"></i>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>修改密码</el-dropdown-item>
+                    <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+            <span>{{admin.username}} ~欢迎您</span>
+        </el-header>
+
+        <el-container>
+            <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                <el-menu :default-openeds="['1', '3']">
+                    <el-submenu index="1">
+                        <template slot="title"><i class="el-icon-message"></i>导航</template>
+                        <el-menu-item-group>
+                            <template slot="title">功能管理</template>
+                            <el-menu-item index="1-1" @click="nav1">图书管理</el-menu-item>
+                            <el-menu-item index="1-2" @click="nav2">读者管理</el-menu-item>
+                            <el-menu-item index="1-3" @click="nav3">借阅管理</el-menu-item>
+                            <el-menu-item index="1-4" @click="nav4">还书管理</el-menu-item>
+                            <el-menu-item index="1-5" @click="nav5">反馈管理</el-menu-item>
+                            <el-menu-item index="1-6" @click="nav6">公告管理</el-menu-item>
+                        </el-menu-item-group>
+
+                    </el-submenu>
+
+                </el-menu>
+            </el-aside>
+            <el-main>
+                <el-form ref="notice" :model="notice" label-width="80px">
+                    <el-form-item label="发布公告:">
+                        <el-input type="textarea" v-model="notice.noticedesc"></el-input>
+                    </el-form-item>
+
+                    <el-button type="primary" @click="addNotice">发布</el-button>
+
+
+                </el-form>
+
+                <el-tag type="success">公告详情</el-tag>
+                <el-table
+                        :data="notices"
+                        stripe
+                        style="width: 100%">
+                    <el-table-column
+                            prop="noticedesc"
+                            label="通知公告"
+                    >
+                        <template slot-scope="scope">
+                            <a href="scope.row.noticedesc" target="_blank" class="buttonText">{{scope.row.noticedesc}}</a>
+                        </template>
+                    </el-table-column>
+
+                    <el-table-column
+                            prop="posttime"
+                            width="100">
+                        <template slot="header" slot-scope="scope">
+                            <a href="" target="_blank">More<<</a>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-main>
+        </el-container>
+    </el-container>
+
+
+</div>
+
+
+
+
+<script>
+    new Vue({
+        el:"#app",
+        mounted(){
+            this.selectAllNotice()
+            axios({
+                method:"get",
+                url:"http://localhost:8080/books_manager_system_war/book/message"
+            }).then(resp=>{
+                this.admin = resp.data
+            })
+        },
+
+        methods: {
+
+            selectAllNotice(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/notice/selectAllNotice"
+                }).then(resp=>{
+                    this.notices = resp.data;
+                })
+            },
+            addNotice(){
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/notice/addNotice",
+                    data :_this.notice}).then(resp=>{
+                    if(resp.data=="success"){
+                        this.$message({
+                            message: '恭喜你，发布成功！',
+                            type: 'success'
+                        });
+                        this.dialogVisible = false;
+                        this.selectAllNotice();
+                    }
+                    else{
+                        this.$message.error('发布失败，请重试！');
+                    }
+
+                })
+            },
+
+            selectAll(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/reader/selectAll"
+                }).then(resp=>{
+                    this.readerData = resp.data
+                })
+            },
+
+            tableRowClassName({row, rowIndex}) {
+                rowIndex++;
+                if (rowIndex%4 === 2) {
+                    return 'warning-row';
+                } else if (rowIndex%4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+
+            nav1(){
+                window.location.href="admin.html"
+            },
+            nav2(){
+                window.location.href="admin_Reader.html"
+            },
+            nav3(){
+                window.location.href="admin_Borrow.html"
+            },
+            nav4(){
+                window.location.href="admin_return.html"
+            },
+            nav5(){
+                window.location.href="admin_feedback.html"
+            },
+            nav6(){
+                window.location.href="admin_notice.html"
+            },
+            logout(){
+                window.location.href="login.html"
+            },
+
+        },
+        data() {
+            return {
+                form1:{
+                    
+                },
+
+                admin:{
+                    username:'',
+                    password:''
+                },
+                selectById:[],
+                reader2:{
+                    id:'',
+                    sno: '',
+                    password: '',
+                    name: '',
+                    phone: '',
+                },
+                reader:{
+                    sno: '',
+                    password: '',
+                    name: '',
+                    phone: '',
+                    status: '',
+                },
+
+                book: {
+                    bname: '',
+                    author: '',
+                    press: '',
+                    type: '',
+
+                },
+                val:null,
+                currentRow:null,
+
+                oldCurrentRow:null,
+
+                selectRows:null,
+                dialogVisible: false,
+                dialogVisible2: false,
+                dialogVisible3: false,
+
+                readerData: [{
+                    sno: '201908324508',
+                    password: '123456789',
+                    name: '曾',
+                    phone: '10086',
+                    status: '1',
+                }],
+
+                allFeedback:[
+                    // {
+                    //     id:'1',
+                    //     sno:'201908324508',
+                    //     desc:'没有《朝花夕拾》，希望可以增加该图书',
+                    // },
+                    // {
+                    //     id:'2',
+                    //     sno:'201908324500',
+                    //     desc:'想看《全球通史》',
+                    // }
+                ],
+
+                notice:{
+                    noticedesc:'',
+                    posttime:'',
+                },
+
+                notices:[
+                    {
+                        noticedesc:'',
+                        posttime:'',
+                    },
+
+                ],
+
+            }
+        }
+
+    })
+</script>
+</body>
+</html>

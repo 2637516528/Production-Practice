@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<style>
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+    .el-table .warning-row {
+        background: oldlace;
+    }
+
+    .el-table .success-row {
+        background: #f0f9eb;
+    }
+    .el-textarea__inner{
+        width: 65%;
+        min-height: 150px !important;
+    }
+
+</style>
+
+<div id="app">
+    <el-container style="height: 800px; border: 1px solid #eee">
+        <el-header style="text-align: right; font-size: 18px;height: 60px" :model="form1">
+            <el-dropdown>
+                <i class="el-icon-setting" style="margin-right: 15px ;font-size: 18px"></i>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item @click.native="personalCenter">个人中心</el-dropdown-item>
+                    <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+            <span>{{reader.name}} ~欢迎您</span>
+        </el-header>
+
+        <el-container>
+            <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                <el-menu :default-openeds="['1', '3']">
+                    <el-submenu index="1">
+                        <template slot="title"><i class="el-icon-message"></i>导航</template>
+                        <el-menu-item-group>
+                            <template slot="title">功能管理</template>
+                            <el-menu-item index="1-1" @click="nav1">图书查询</el-menu-item>
+                            <el-menu-item index="1-2" @click="nav2">借阅管理</el-menu-item>
+                            <el-menu-item index="1-3" @click="nav3">读者反馈</el-menu-item>
+                            <el-menu-item index="1-4" @click="nav4">公告查询</el-menu-item>
+                        </el-menu-item-group>
+
+                    </el-submenu>
+
+                </el-menu>
+            </el-aside>
+
+            <el-main>
+<!--                <el-row>-->
+<!--                    <el-button type="primary" @click="dialogVisible = true">我要反馈</el-button>-->
+<!--                </el-row>-->
+
+                    <el-form ref="feedbackContent" :model="feedbackContent" label-width="110px">
+<!--                        <el-form-item label="账号">-->
+<!--                            <el-input v-model="myFeedback.sno"></el-input>-->
+<!--                        </el-form-item>-->
+                        <el-form-item label="问题反馈:">
+                            <el-input type="textarea" v-model="feedbackContent.desc"></el-input>
+                        </el-form-item>
+
+                            <el-button type="primary" @click="addFeedback">反馈</el-button>
+                            <el-button @click="dialogVisible = false">取消</el-button>
+
+                    </el-form>
+
+
+<!--                <el-tag type="success">我的反馈</el-tag>-->
+<!--                <el-table :data="myFeedback" style="width: 100%" :row-class-name="tableRowClassName">-->
+<!--                    <el-table-column type="index" label="序号" align="center"></el-table-column>-->
+<!--                    <el-table-column prop="id" label="反馈编号" align="center"></el-table-column>-->
+<!--                    <el-table-column prop="sno" label="账号" align="center"></el-table-column>-->
+<!--                    <el-table-column prop="desc" label="反馈描述" align="center"></el-table-column>-->
+<!--                    </el-table-column>-->
+<!--                </el-table>-->
+
+
+            </el-main>
+        </el-container>
+    </el-container>
+
+</div>
+
+
+
+
+<script>
+    let sno
+
+    new Vue({
+        el:"#app",
+        mounted(){
+            this.selectAllFeedback()
+            axios({
+                method:"get",
+                url:"http://localhost:8080/books_manager_system_war/reader/message"
+            }).then(resp=>{
+                this.reader = resp.data
+                sno = this.reader.sno
+            })
+        },
+
+        methods: {
+            addFeedback(){
+                // console.log('submit!');
+
+                if (this.feedbackContent.desc == undefined || this.feedbackContent.desc == '') {
+                    this.$message.error('请输入反馈内容');
+                    return
+                }
+
+                this.feedbackContent.sno = sno
+                let feedbackContent = this.feedbackContent
+
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/feedback/addFeedback",
+                    data : feedbackContent}).then(resp=>{
+                    if(resp.data == "success"){
+                        this.$message({
+                            message: '恭喜你，反馈成功！',
+                            type: 'success'
+                        });
+                        this.dialogVisible = false;
+
+                    }
+                    else{
+                        this.$message.error('反馈失败，请重试！');
+                    }
+
+                })
+            },
+
+            selectAllFeedback(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/feedback/selectAllFeedback"
+                }).then(resp=>{
+                    this.myFeedback = resp.data;
+                })
+            },
+
+            selectByIdBook(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectByIdBook"
+                }).then(resp=>{
+                    this.bookDetail = resp.data;
+                })
+            },
+
+
+
+            selectBook() {
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectByCondition",
+                    data :_this.book}).then(resp=>{
+                    this.tableData = resp.data;
+
+                })
+            },
+            tableRowClassName({row, rowIndex}) {
+                rowIndex++;
+                if (rowIndex%4 === 2) {
+                    return 'warning-row';
+                } else if (rowIndex%4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+            handleCurrentChange(val) {
+                this.currentRow = val;
+            },
+            nav1(){
+                window.location.href="reader.html"
+            },
+            nav2(){
+                window.location.href="reader_Borrow.html"
+            },
+            nav3(){
+                window.location.href="reader_feedback.html"
+            },
+            nav4(){
+                window.location.href="reader_notice.html"
+            },
+            personalCenter(){
+                window.location.href="reader_center.html"
+            },
+            logout(){
+                window.location.href="login.html"
+            },
+
+
+        },
+        data() {
+            return {
+                form1:{
+
+                },
+                val:null,
+                reader:{
+                    sno:'',
+                    password:'',
+                    name:'',
+                    phone:'',
+                    status:''
+                },
+                selectById:[],
+                book: {
+                    bname: '',
+                    author: '',
+                    press: '',
+                    type: '',
+                    status:''
+
+                },
+                dialogVisible: false,
+
+                tableData: [{
+                    bname: '东方快车谋杀案',
+                    author: '阿加莎克里斯蒂',
+                    press: '新星出版社',
+                    type: '小说',
+                    status:'在架'
+                }],
+                bookDetail: [{
+                    bname: '东方快车谋杀案',
+                    author: '阿加莎克里斯蒂',
+                    press: '新星出版社',
+                    type: '小说',
+                    status:'在架'
+                }],
+                feedbackContent: {
+                    sno: '',
+                    desc: '',
+                }
+
+
+            }
+        }
+
+    })
+</script>
+
+</body>
+</html>

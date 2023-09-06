@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xiaotang.mapper.BorrowMapper">
+    <!--
+         public Employee getEmpById() ; 下面的select标签实现接口的getId方法
+      -->
+    <resultMap id="borrowResultMap" type="com.xiaotang.pojo.Borrow">
+    </resultMap>
+
+
+    <update id="audit">
+        update borrow set status = #{status} where num = #{num};
+    </update>
+
+
+    <select id="selectBorrowByCondition" resultType="com.xiaotang.pojo.Borrow">
+        select * from borrow
+        <where>
+            <if test="status !=null and status !='' ">
+                and  status = '待审核'
+            </if>
+            <if test="sno !=null and sno !='' ">
+                and  sno like #{sno}
+            </if>
+            <if test="bname !=null and bname !='' ">
+                and  bname like #{bname}
+            </if>
+        </where>
+        ORDER BY num DESC
+    </select>
+
+    <select id="selectByNum" resultType="com.xiaotang.pojo.Borrow">
+        SELECT * FROM borrow WHERE num = #{num}
+    </select>
+
+
+</mapper>

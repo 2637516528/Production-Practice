@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="js/vue.js"></script>
+<script src="js/axios-0.18.0.js"></script>
+<script src="element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="element-ui/lib/theme-chalk/index.css">
+
+<style>
+    .el-header {
+        background-color: #B3C0D1;
+        color: #333;
+        line-height: 60px;
+    }
+    .el-table .warning-row {
+        background: oldlace;
+    }
+
+    .el-table .success-row {
+        background: #f0f9eb;
+    }
+
+
+
+    .el-pagination{
+        text-align: center;
+    }
+
+
+</style>
+
+<div id="app">
+    <el-container style="height: 800px; border: 1px solid #eee">
+        <el-header style="text-align: right; font-size: 18px;height: 60px" :model="form1">
+            <el-dropdown>
+                <i class="el-icon-setting" style="margin-right: 15px ;font-size: 18px"></i>
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item @click.native="personalCenter">个人中心</el-dropdown-item>
+                    <el-dropdown-item @click.native="logout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+            <span>{{reader.name}} ~欢迎您</span>
+        </el-header>
+
+        <el-container>
+            <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
+                <el-menu :default-openeds="['1', '3']">
+                    <el-submenu index="1">
+                        <template slot="title"><i class="el-icon-message"></i>导航</template>
+                        <el-menu-item-group>
+                            <template slot="title">功能管理</template>
+                            <el-menu-item index="1-1" @click="nav1">图书查询</el-menu-item>
+                            <el-menu-item index="1-2" @click="nav2">借阅管理</el-menu-item>
+                            <el-menu-item index="1-3" @click="nav3">读者反馈</el-menu-item>
+                            <el-menu-item index="1-4" @click="nav4">公告查询</el-menu-item>
+                        </el-menu-item-group>
+
+                    </el-submenu>
+
+                </el-menu>
+            </el-aside>
+            <el-main>
+                <!--                表单 实现查询功能-->
+                <el-form :inline="true" :model="book" class="demo-form-inline">
+                    <el-form-item label="书名">
+                        <el-input v-model="book.bname" placeholder="霍乱时期的爱情"></el-input>
+                    </el-form-item>
+                    <el-form-item label="作者">
+                        <el-input v-model="book.author" placeholder="马尔克斯"></el-input>
+                    </el-form-item>
+                    <el-form-item label="分类">
+                        <el-input v-model="book.type" placeholder="小说"></el-input>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="selectBook">查询</el-button>
+                    </el-form-item>
+                </el-form>
+                <!--                两个常用操作-->
+<!--                <el-row>-->
+<!--                    <el-button type="primary" @click="dialogVisible = true">添加</el-button>-->
+<!--                    <el-button type="danger">批量删除</el-button>-->
+<!--                </el-row>-->
+                <!--                    通过点击添加按钮弹出对话框并填写表单数据并传到后台-->
+<!--                <el-dialog-->
+<!--                        title="添加"-->
+<!--                        :visible.sync="dialogVisible"-->
+<!--                        width="30%">-->
+<!--                    <span>-->
+<!--                        <el-form ref="form" :model="book" label-width="80px">-->
+<!--                             <el-form-item label="书名">-->
+<!--                                <el-input v-model="book.bname"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            <el-form-item label="作者">-->
+<!--                                <el-input v-model="book.author"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            <el-form-item label="出版社">-->
+<!--                                <el-input v-model="book.press"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            <el-form-item label="类别">-->
+<!--                                <el-input v-model="book.type"></el-input>-->
+<!--                             </el-form-item>-->
+<!--                            -->
+
+
+
+<!--    <el-button type="primary" @click="addBook">确定</el-button>-->
+<!--    <el-button @click="dialogVisible = false">取消</el-button>-->
+<!--                            </el-form-item>-->
+<!--</el-form></span>-->
+
+<!--                </el-dialog>-->
+
+                <!--                表格数据，通过发送ajax请求到后端并接受json数据，tableDate是我们要绑定的数据模型-->
+                <el-table
+                        :data="tableData"
+                        style="width: 100%"
+                        :row-class-name="tableRowClassName"
+                        @current-change="handleCurrentChange"
+                        >
+
+                    <el-table-column
+                            type="index"
+                            label="序号"
+                            align="center">
+                    </el-table-column>
+                    <el-table-column
+                            prop="bname"
+                            label="书名"
+                            align="center">
+                    </el-table-column>
+                    <el-table-column
+                            prop="author"
+                            label="作者"
+                            align="center">
+                    </el-table-column>
+                    <el-table-column
+                            prop="press"
+                            label="出版社"
+                            align="center">
+                    </el-table-column>
+                    <el-table-column
+                            prop="type"
+                            label="分类"
+                            align="center">
+                    </el-table-column>
+                    <el-table-column
+                            prop="status"
+                            label="状态"
+                            align="center">
+                    </el-table-column>
+                    <el-table-column
+                            label="操作"
+                            align="center">
+                        <template slot-scope="scope">
+                            <el-row>
+                                <el-button type="primary" @click="detail(scope.row)">简介</el-button>
+                                <el-button :disabled="scope.row.status != '在架'" type="primary" @click="borrow(scope.row)">借阅</el-button>
+                            </el-row>
+
+                        </template>
+                    </el-table-column>
+                </el-table>
+
+<!--                <el-dialog-->
+<!--                        title="查看详情"-->
+<!--                        :visible.sync="dialogVisible3"-->
+<!--                        width="80%">-->
+<!--                    <span>111111111-->
+<!--&lt;!&ndash;                         <el-table :data="bookDetail"&ndash;&gt;-->
+<!--&lt;!&ndash;                                   style="width: 100%"&ndash;&gt;-->
+<!--&lt;!&ndash;                                   :row-class-name="tableRowClassName"&ndash;&gt;-->
+<!--&lt;!&ndash;                                   title="详情">&ndash;&gt;-->
+
+<!--&lt;!&ndash;                             <el-table-column&ndash;&gt;-->
+<!--&lt;!&ndash;                                     prop="bname"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     label="书名"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     align="center">&ndash;&gt;-->
+<!--&lt;!&ndash;                             </el-table-column>&ndash;&gt;-->
+<!--&lt;!&ndash;                             <el-table-column&ndash;&gt;-->
+<!--&lt;!&ndash;                                     prop="author"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     label="作者"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     align="center">&ndash;&gt;-->
+<!--&lt;!&ndash;                             </el-table-column>&ndash;&gt;-->
+<!--&lt;!&ndash;                             <el-table-column&ndash;&gt;-->
+<!--&lt;!&ndash;                                     prop="press"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     label="出版社"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     align="center">&ndash;&gt;-->
+<!--&lt;!&ndash;                             </el-table-column>&ndash;&gt;-->
+<!--&lt;!&ndash;                             <el-table-column&ndash;&gt;-->
+<!--&lt;!&ndash;                                     prop="type"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     label="分类"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     align="center">&ndash;&gt;-->
+<!--&lt;!&ndash;                             </el-table-column>&ndash;&gt;-->
+<!--&lt;!&ndash;                             <el-table-column&ndash;&gt;-->
+<!--&lt;!&ndash;                                     prop="status"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     label="状态"&ndash;&gt;-->
+<!--&lt;!&ndash;                                     align="center">&ndash;&gt;-->
+<!--&lt;!&ndash;                             </el-table-column>&ndash;&gt;-->
+
+<!--                             <el-button @click="dialogVisible3 = false">关闭</el-button>-->
+
+<!--&lt;!&ndash;                        </el-table>&ndash;&gt;-->
+<!--                    </span>-->
+
+<!--                </el-dialog>-->
+
+
+            </el-main>
+
+        </el-container>
+
+    </el-container>
+
+
+</div>
+
+
+
+
+<script>
+    new Vue({
+        el:"#app",
+        mounted(){
+            this.selectAll()
+            axios({
+                method:"get",
+                url:"http://localhost:8080/books_manager_system_war/reader/message"
+            }).then(resp=>{
+                this.reader = resp.data
+            })
+        },
+
+        methods: {
+            handleEdit(row){
+                console.log(row)
+            },
+            detail(row) {
+                this.$alert(row.introduction, '图书简介', {
+                    confirmButtonText: '确定',
+                    // callback: action => {
+                    //     this.$message({
+                    //         type: 'info',
+                    //         message: `action: ${action}`
+                    //     });
+                    // }
+                });
+            },
+
+            borrow(val){
+                // console.log(this.currentRow)
+                this.selectById[0]=val.id;
+                console.log( this.selectById[0]);
+                let status =val.status;
+                console.log(status);
+                if(status=="在架") {
+                    var _this = this;
+                    axios({
+                        method: "post",
+                        url: "http://localhost:8080/books_manager_system_war/book/borrow",
+                        data: _this.selectById
+                    }).then(resp => {
+                        if (resp.data == "success") {
+                            this.$message({
+                                message: '恭喜你，借书成功！',
+                                type: 'success'
+                            });
+                            this.selectAll();
+
+                        } else {
+                            this.$message.error('借书失败，请重试！');
+                        }
+
+                    })
+                }else{
+                    this.$message.error('该图书已被借阅！');
+                }
+            },
+
+            selectByIdBook(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectByIdBook"
+                }).then(resp=>{
+                    this.bookDetail = resp.data;
+                })
+            },
+
+
+            selectAll(){
+                axios({
+                    method:"get",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectAll"
+                }).then(resp=>{
+                    this.tableData = resp.data;
+                })
+            },
+
+            selectBook() {
+                var _this=this;
+                axios({
+                    method:"post",
+                    url:"http://localhost:8080/books_manager_system_war/book/selectByCondition",
+                    data :_this.book}).then(resp=>{
+                    this.tableData = resp.data;
+
+                })
+            },
+            tableRowClassName({row, rowIndex}) {
+                rowIndex++;
+                if (rowIndex%4 === 2) {
+                    return 'warning-row';
+                } else if (rowIndex%4 === 0) {
+                    return 'success-row';
+                }
+                return '';
+            },
+            handleCurrentChange(val) {
+                this.currentRow = val;
+            },
+            nav1(){
+                window.location.href="reader.html"
+            },
+            nav2(){
+                window.location.href="reader_Borrow.html"
+            },
+            nav3(){
+                window.location.href="reader_feedback.html"
+            },
+            nav4(){
+                window.location.href="reader_notice.html"
+            },
+            personalCenter(){
+                window.location.href="reader_center.html"
+            },
+            logout(){
+                window.location.href="login.html"
+            },
+
+
+        },
+        data() {
+            return {
+                form1:{
+
+                },
+                val:null,
+                reader:{
+                    sno:'',
+                    password:'',
+                    name:'',
+                    phone:'',
+                    status:''
+                },
+                selectById:[],
+                book: {
+                    bname: '',
+                    author: '',
+                    press: '',
+                    type: '',
+                    status:''
+
+                },
+                dialogVisible: false,
+
+                tableData: [{
+                    bname: '东方快车谋杀案',
+                    author: '阿加莎克里斯蒂',
+                    press: '新星出版社',
+                    type: '小说',
+                    status:'在架'
+                }],
+                bookDetail: [{
+                    bname: '东方快车谋杀案',
+                    author: '阿加莎克里斯蒂',
+                    press: '新星出版社',
+                    type: '小说',
+                    status:'在架'
+                }]
+            }
+        }
+
+    })
+</script>
+</body>
+</html>

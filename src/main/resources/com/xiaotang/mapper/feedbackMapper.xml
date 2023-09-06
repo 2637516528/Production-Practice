@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xiaotang.mapper.feedbackMapper">
+    <!--
+         public Employee getEmpById() ; 下面的select标签实现接口的getId方法
+      -->
+    <resultMap id="feedbackResultMap" type="com.xiaotang.pojo.feedback">
+    </resultMap>
+
+    <select id="selectAllFeedback" resultType="com.xiaotang.pojo.feedback">
+        select * from feedback;
+    </select>
+
+    <insert id="addFeedback">
+        insert into feedback(sno, `desc`) values(#{sno},#{desc});
+    </insert>
+
+
+</mapper>

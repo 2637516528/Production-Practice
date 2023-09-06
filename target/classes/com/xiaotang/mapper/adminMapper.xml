@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xiaotang.mapper.adminMapper">
+    <!--
+         public Employee getEmpById() ; 下面的select标签实现接口的getId方法
+      -->
+    <resultMap id="adminResultMap" type="com.xiaotang.pojo.admin">
+    </resultMap>
+    <select id="selectAll" resultType="com.xiaotang.pojo.admin">
+        select * from admin;
+    </select>
+    <select id="loginAdmin" resultType="com.xiaotang.pojo.admin">
+        select * from admin where username=#{username} and password=#{password};
+    </select>
+
+
+</mapper>

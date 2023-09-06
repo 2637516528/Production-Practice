@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xiaotang.mapper.bookMapper">
+    <!--
+         public Employee getEmpById() ; 下面的select标签实现接口的getId方法
+      -->
+    <resultMap id="bookResultMap" type="com.xiaotang.pojo.Book">
+    </resultMap>
+    <insert id="addBook">
+        insert into book(bname, author, press, `type` , status, introduction) VALUES (#{bname},#{author},#{press},#{type},'在架',#{introduction});
+    </insert>
+
+    <insert id="borrow">
+        insert into borrow(sno, bid, bname, begintime, endtime, status) VALUES (#{sno},#{bid},#{bname},#{begintime},#{endtime},'已借书');
+    </insert>
+
+    <insert id="insertBatch">
+
+        INSERT INTO book(bname, author, press, `type`, status, introduction) VALUES
+
+        <foreach collection="list" separator="," item="item">
+
+            (#{item.bname}, #{item.author}, #{item.press}, #{item.type}, #{item.status}, #{item.introduction})
+
+        </foreach>
+
+    </insert>
+
+    <update id="updateStatus">
+        update book set status='被借阅中' where id=#{id};
+    </update>
+
+<!--    还书操作-->
+    <update id="returnBook">
+        update borrow set status='已还书',endtime=#{endtime} where bid=#{bid};
+
+    </update>
+<!--    将书的状态变为可借-->
+    <update id="updateStatus2">
+        update book set status='在架' where id=#{id};
+
+    </update>
+
+    <update id="updateBook">
+        update book set bname=#{bname},author=#{author},press=#{press},type=#{type},introduction=#{introduction} where id=#{id}
+
+    </update>
+
+    <delete id="deleteById">
+        delete from book where id=#{id};
+    </delete>
+    <select id="selectAll" resultType="com.xiaotang.pojo.Book">
+        select * from book order by id desc
+    </select>
+    <select id="selectByCondition" resultType="com.xiaotang.pojo.Book">
+        select * from book
+        <where>
+            <if test="bname !=null and bname !='' ">
+                and  bname like #{bname}
+            </if>
+            <if test="author !=null and author !='' ">
+                and  author like #{author}
+            </if>
+            <if test="type !=null and type !='' ">
+                and  type like #{type}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <select id="selectByIdBook" resultType="com.xiaotang.pojo.Book">
+        select * from book where id=#{id} ;
+    </select>
+    <select id="selectById" resultType="com.xiaotang.pojo.Book">
+        select * from book where id=#{id} ;
+    </select>
+    <select id="selectBorrow" resultType="com.xiaotang.pojo.Borrow">
+        select * from borrow order by num desc, sno asc ;
+    </select>
+
+    <select id="selectBySno" resultType="com.xiaotang.pojo.Borrow">
+
+        select * from borrow where sno=#{sno} order by num desc;
+
+    </select>
+
+    <select id="selectAuditBorrow" resultType="com.xiaotang.pojo.Borrow">
+        select * from borrow where status = '待审核' order by num desc, sno asc
+    </select>
+
+
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xiaotang.mapper.readerMapper">
+    <!--
+         public Employee getEmpById() ; 下面的select标签实现接口的getId方法
+      -->
+    <resultMap id="readerResultMap" type="com.xiaotang.pojo.reader">
+    </resultMap>
+
+    <insert id="addReader">
+        insert into reader(sno, password, name, phone, status) values(#{sno},#{password},#{name},#{phone},#{status});
+    </insert>
+
+
+    <insert id="registerReader">
+
+        insert into reader(sno, password, name, phone, status) values(#{sno},#{password},#{name},#{phone},1);
+
+    </insert>
+
+    <delete id="deleteById">
+        delete from reader where id=#{id};
+    </delete>
+
+    <update id="updateReader" >
+        update reader set sno=#{sno},password=#{password},name=#{name},phone=#{phone} where id=#{id}
+
+    </update>
+
+    <select id="selectAll" resultType="com.xiaotang.pojo.reader">
+        select * from reader;
+    </select>
+
+    <select id="selectByCondition" resultType="com.xiaotang.pojo.reader">
+        select * from reader
+        <where>
+            <if test="sno !=null and sno !='' ">
+                and  sno like #{sno}
+            </if>
+            <if test="name !=null and name !='' ">
+                and  name like #{name}
+            </if>
+
+        </where>
+
+
+
+    </select>
+
+    <select id="loginReader" resultType="com.xiaotang.pojo.reader">
+        select * from reader where sno=#{sno} and password=#{password} ;
+    </select>
+
+    <select id="selectById" resultType="com.xiaotang.pojo.reader">
+        select * from reader where id=#{id} ;
+    </select>
+
+    <select id="selectReader" resultType="com.xiaotang.pojo.reader">
+        select * from reader where id=#{id} ;
+    </select>
+</mapper>
